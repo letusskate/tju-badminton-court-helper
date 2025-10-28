@@ -83,6 +83,7 @@ def main():
     chrome_options = Options()
     
     # Set the WeChat User-Agent - this is the KEY configuration
+    # Note: In actual code, use config.WECHAT_USER_AGENT_ANDROID instead
     wechat_user_agent = (
         "Mozilla/5.0 (Linux; Android 9; SM-G960F Build/PPR1.180610.011) "
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Mobile "
