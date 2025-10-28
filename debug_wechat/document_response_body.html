@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>用户类型选择</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <style>
+        .container {
+            background-color: #ffffff;
+            min-height: 100vh;
+            padding-bottom: 0 !important;
+            display: flex;
+            flex-direction: column;
+        }
+
+            .container .banner {
+                text-align: center;
+                position: relative;
+            }
+
+                .container .banner img {
+                    width: 100%;
+                }
+
+                .container .banner .logo-wrap {
+                    width: 100%;
+                    position: absolute;
+                    top: 0;
+                    margin: 0 auto;
+                    font-size: 20px;
+                    color: #ffffff;
+                }
+
+                    .container .banner .logo-wrap img {
+                        width: 30%;
+                        margin-top: 24px;
+                    }
+
+        .contant {
+            flex-grow: 1;
+            margin-bottom: 20px;
+        }
+
+            .contant .contant-item {
+                position: relative;
+                height: 58px;
+                text-align: center;
+                margin-top: 75px;
+                color: #ffffff;
+                font-size: 20px;
+                font-weight: 700;
+                letter-spacing: 4px;
+                line-height: 1.3;
+            }
+
+                .contant .contant-item img {
+                    height: 61px;
+                }
+
+                .contant .contant-item div {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    -ms-transform: translateX(-50%,-50%);
+                    -moz-transform: translateX(-50%,-50%);
+                    -webkit-transform: translateX(-50%,-50%);
+                    -o-transform: translateX(-50%,-50%);
+                    transform: translate(-50%,-50%);
+                }
+
+        .container .foot {
+            position: relative;
+            bottom: 0;
+        }
+
+        .header {
+            height: 48px;
+            line-height: 48px;
+            background-color: #079fff;
+            color: #fff;
+            text-align: center;
+        }
+
+        .headertext {
+            display: block;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+            font-size: 110%;
+            color: #fff;
+            font-weight: normal;
+            line-height: 50px;
+        }
+
+        .arrow {
+            position: absolute;
+            left: 6px;
+            height: 32px;
+            line-height: 48px;
+            margin-top: 8px;
+        }
+
+        .contant .contant-xw {
+            position: relative;
+            height: 58px;
+            text-align: center;
+            margin-top: 35px;
+            color: #6666FF;
+            font-size: 25px;
+            font-weight: 700;
+        }
+        .tip-text {
+            padding: 0 16px;
+            /*text-align: center;*/
+            font-size: 18px;
+            line-height: 20px;
+            color: #fa5151;
+            font-weight: bold;
+        }
+        p::before {
+            content: "●"; /* 生成圆点 */
+            font-size: 1.2em; /* 设置圆点大小 */
+            font-weight: bold; /* 设置圆点粗细 */
+            margin-right: 0.3em; /* 设置圆点和文字之间的距离 */
+        }
+    </style>
+    <script src="/Views/js/jquery.min.js"></script>
+    <!--<link href="/Views/css/common.css" rel="stylesheet" type="text/css" />-->
+    <!--<link href="/Views/css/style_sport.css" rel="stylesheet" type="text/css" />-->
+    <link rel="stylesheet" href="./newstyle/css/weui.min.css">
+    <link rel="stylesheet" href="./newstyle/css/main.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="banner">
+            <img src="./newstyle/images/login-banner.jpg" alt="">
+            <div class="logo-wrap">
+                <img src="./newstyle/images/xianlogo.png" alt="">
+                <div style="margin-top:13px;">体育场馆预订系统</div>
+            </div>
+        </div>
+        <div class="contant">
+            <div class="contant-item" onclick="getxn()">
+                <img src="./newstyle/images/button1.png" alt="">
+                <div>学号(工资号)<br>登录</div>
+            </div>
+            <!--<div class="contant-item" onclick="getxw()">
+                <img src="./newstyle/images/button2.png" alt="">
+                <div>校外人员注册</div>
+            </div>-->
+            <div class="contant-xw" onclick="getxw()">
+                <div>手机号登录</div>
+            </div>
+
+        </div>
+        <div class="tip-text"><p>首次登录后您的预定系统账号将与当前的微信、手机号绑定且无法解绑，请务必使用本人信息登录!</p><br><p>校内师生首次登录本系统时务必选择学号(工资号)登录</p></div>
+        <div class="foot">
+            <img class="full-img" src="./newstyle/images/login-foot.jpg" alt="">
+        </div>
+    </div>
+
+    <script>
+        function getxn() {
+            window.location.href = "/User/UserChoose?LoginType=1";
+        }
+        function getxw() {
+            window.location.href = "/User/UserChoose?LoginType=0";
+        }
+        //window.onload = function () {
+        //    getSource();
+        //}
+    </script>
+    <script type="text/javascript" src="../js/venue.js?t=20200825"></script>
+</body>
+</html>
