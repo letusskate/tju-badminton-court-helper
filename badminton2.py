@@ -172,15 +172,63 @@ if 'err_blocked_by_client' in second_src or '已被屏蔽' in second_src:
       ff.write(resp.text)
     print('Saved fallback HTML ->', fallback_path)
     if resp.status_code == 200 and resp.text.strip():
-      # 把 HTML 作为 data URL 加载（避免 Chrome 本地拦截）
-      data_url = 'data:text/html;charset=utf-8,' + urllib.parse.quote(resp.text)
-      driver.get(data_url)
-      time.sleep(2)
-      # 保存渲染后的页面
-      driver.save_screenshot(os.path.join(out_dir, 'page_2_fallback_render.png'))
-      with open(os.path.join(out_dir, 'page_2_fallback_render.html'), 'w', encoding='utf-8') as rf:
-        rf.write(driver.page_source)
-      print('Loaded fallback HTML into browser and saved rendered snapshot.')
+      # 对返回的 HTML 做简单清理：去掉页面内显式的 "非微信环境提示" 脚本
+      # 有些页面通过 JS 检测 navigator.userAgent 并在非微信环境时替换 DOM，
+      # 我们在这里把这类检测脚本移除或屏蔽，以防页面内部再次替换为“请在微信客户端打开链接”。
+      try:
+        import re
+        original_html = resp.text
+        # 1) 屏蔽 if (!isWeixin) {...} 这类结构（非贪婪模式匹配大括号内内容）
+        cleaned = re.sub(r"if\s*\(\s*!\s*isWeixin\s*\)\s*\{.*?\}", "/* removed isWeixin check */", original_html, flags=re.DOTALL|re.IGNORECASE)
+        # 2) 另外把常见的简写形式也替换掉（if(!isWeixin)）
+        cleaned = re.sub(r"if\s*\(\s*!isWeixin\s*\)\s*\{.*?\}", "/* removed isWeixin check */", cleaned, flags=re.DOTALL|re.IGNORECASE)
+        # 3) 在页面顶部注入一个小脚本，作为保险：尽量在页面脚本执行前强制把 navigator.userAgent 中加入 MicroMessenger
+        inject_script = "<script>try{Object.defineProperty(navigator,'userAgent',{get:function(){return '%s';},configurable:true});}catch(e){};</script>" % DEFAULT_USER_AGENT
+        # 3b) 再注入一段防护脚本，用来拦截 document.write/writeln、innerHTML setter、location.replace/assign
+        protect_script = '''<script>(function(){
+  function shouldBlock(html){
+    try{ return typeof html === 'string' && (html.indexOf('请在微信客户端打开链接')!==-1 || html.indexOf('抱歉，出错了')!==-1); }catch(e){return false}
+  }
+  var _doc_write = document.write.bind(document);
+  document.write = function(){ try{ if(!shouldBlock(arguments[0])) return _doc_write.apply(document, arguments); console.log('blocked document.write'); }catch(e){} };
+  document.writeln = function(){ try{ if(!shouldBlock(arguments[0])) return _doc_write.apply(document, arguments); console.log('blocked document.writeln'); }catch(e){} };
+  try{
+    var desc = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    if(desc && desc.set){
+      var origSet = desc.set;
+      Object.defineProperty(Element.prototype, 'innerHTML', {
+        get: desc.get,
+        set: function(v){ try{ if(shouldBlock(v)){ console.log('blocked innerHTML set'); return; } return origSet.call(this, v); }catch(e){} },
+        configurable: true,
+        enumerable: desc.enumerable
+      });
+    }
+  }catch(e){}
+  try{ var _replace = location.replace; location.replace = function(u){ console.log('blocked location.replace',u); }; var _assign = location.assign; location.assign = function(u){ console.log('blocked location.assign',u); }; }catch(e){}
+  try{ window.WeixinJSBridge = window.WeixinJSBridge || { invoke:function(){}, on:function(){}, call:function(){}, publish:function(){}, subscribe:function(){}, config:function(){}, getEnv:function(){} }; window.__wxjs_environment = window.__wxjs_environment || 'browser'; }catch(e){}
+})();</script>'''
+        # 将注入脚本插入到 <head> 的开头（如果没有 head，则简单放到开头）
+        if '<head' in cleaned.lower():
+          cleaned = re.sub(r'(?i)(<head[^>]*>)', r"\1" + inject_script + protect_script, cleaned, count=1)
+        else:
+          cleaned = inject_script + protect_script + cleaned
+
+        sanitized_path = os.path.join(out_dir, 'page_2_fallback_sanitized.html')
+        with open(sanitized_path, 'w', encoding='utf-8') as sf:
+          sf.write(cleaned)
+        print('Saved sanitized fallback HTML ->', sanitized_path)
+
+        # 把清理后的 HTML 作为 data URL 加载（避免 Chrome 本地拦截）
+        data_url = 'data:text/html;charset=utf-8,' + urllib.parse.quote(cleaned)
+        driver.get(data_url)
+        time.sleep(2)
+        # 保存渲染后的页面
+        driver.save_screenshot(os.path.join(out_dir, 'page_2_fallback_render.png'))
+        with open(os.path.join(out_dir, 'page_2_fallback_render.html'), 'w', encoding='utf-8') as rf:
+          rf.write(driver.page_source)
+        print('Loaded sanitized fallback HTML into browser and saved rendered snapshot.')
+      except Exception as ee:
+        print('Error sanitizing/loading fallback HTML:', ee)
   except Exception as e:
     print('Requests fallback failed:', e)
 

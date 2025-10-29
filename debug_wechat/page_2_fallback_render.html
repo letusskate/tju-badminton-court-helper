@@ -1,0 +1,35 @@
+<html><head><script>try{Object.defineProperty(navigator,'userAgent',{get:function(){return 'Mozilla/5.0 (Linux; Android 9; SM-G960F Build/PPR1.180610.011) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Mobile Safari/537.36 MicroMessenger/8.0.30.1810(0x28001030) Process/tools';},configurable:true});}catch(e){};</script><script>(function(){
+  function shouldBlock(html){
+    try{ return typeof html === 'string' && (html.indexOf('请在微信客户端打开链接')!==-1 || html.indexOf('抱歉，出错了')!==-1); }catch(e){return false}
+  }
+  var _doc_write = document.write.bind(document);
+  document.write = function(){ try{ if(!shouldBlock(arguments[0])) return _doc_write.apply(document, arguments); console.log('blocked document.write'); }catch(e){} };
+  document.writeln = function(){ try{ if(!shouldBlock(arguments[0])) return _doc_write.apply(document, arguments); console.log('blocked document.writeln'); }catch(e){} };
+  try{
+    var desc = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+    if(desc && desc.set){
+      var origSet = desc.set;
+      Object.defineProperty(Element.prototype, 'innerHTML', {
+        get: desc.get,
+        set: function(v){ try{ if(shouldBlock(v)){ console.log('blocked innerHTML set'); return; } return origSet.call(this, v); }catch(e){} },
+        configurable: true,
+        enumerable: desc.enumerable
+      });
+    }
+  }catch(e){}
+  try{ var _replace = location.replace; location.replace = function(u){ console.log('blocked location.replace',u); }; var _assign = location.assign; location.assign = function(u){ console.log('blocked location.assign',u); }; }catch(e){}
+  try{ window.WeixinJSBridge = window.WeixinJSBridge || { invoke:function(){}, on:function(){}, call:function(){}, publish:function(){}, subscribe:function(){}, config:function(){}, getEnv:function(){} }; window.__wxjs_environment = window.__wxjs_environment || 'browser'; }catch(e){}
+})();</script>
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0">
+    </head>
+    <body>
+        <script type="text/javascript">
+            var ua = navigator.userAgent.toLowerCase();
+            var isWeixin = ua.indexOf('micromessenger') != -1;
+            var isAndroid = ua.indexOf('android') != -1;
+            var isIos = (ua.indexOf('iphone') != -1) || (ua.indexOf('ipad') != -1);
+            /* removed isWeixin check */
+        </script>
+    
+
+</body></html>
